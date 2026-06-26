@@ -418,24 +418,22 @@
 
         toggleOverlay(true, `正在跨校園網絡抓取 ${cls}班 ${seat}號 雲端實時數據...`);
 
-        // 智慧型安全傳輸模型：使用 URLSearchParams + 內建 iframe 攔截，達到真正跨設備雙向互通！
+        // 智慧型安全傳輸模型：使用 GET 搭配 jsonData 傳遞參數，這能 100% 繞過跨網域 CORS 讀取封鎖，讀到雲端最新狀態！
         var postData = { action: "load", userKey: currentUserKey };
         
         fetch(GAS_API_URL + "?jsonData=" + encodeURIComponent(JSON.stringify(postData)), {
-            method: "GET" // 改用 GET 請求搭配參數，這能 100% 繞過 Google 的 CORS 攔截，且允許前端完整讀取 Response！
+            method: "GET" 
         })
         .then(res => res.text())
         .then(htmlText => {
-            // 解析由 Google HtmlService 回傳的數據
             try {
-                // 清理可能包夾的 HTML 標籤
                 var cleanJson = htmlText.replace(/<[^>]*>/g, "").trim();
                 var data = JSON.parse(cleanJson);
                 
                 if(data && data.success) {
                     wrongProblemBook = data.wrongBook || [];
                     learningStats = data.stats || getInitialStatsObject();
-                    // 同步寫入本機當備援快取
+                    
                     localStorage.setItem(`PolyCloudCache_${currentUserKey}`, JSON.stringify({
                         wrongBook: wrongProblemBook, stats: learningStats
                     }));
@@ -479,7 +477,6 @@
     function cloudSaveData() {
         if (!currentUserKey) return;
         
-        // 隨時更新本機快取
         localStorage.setItem(`PolyCloudCache_${currentUserKey}`, JSON.stringify({
             wrongBook: wrongProblemBook, stats: learningStats
         }));
@@ -491,10 +488,9 @@
             wrongBook: wrongProblemBook
         };
 
-        // 為確保最高速度，寫入時使用相容性最高的 URL 編碼格式傳輸
         fetch(GAS_API_URL, {
             method: "POST",
-            mode: "no-cors", // 寫入操作不需要讀取 Response，故維持 no-cors 以追求最流暢極速
+            mode: "no-cors", 
             headers: { "Content-Type": "application/x-www-form-urlencoded" },
             body: "jsonData=" + encodeURIComponent(JSON.stringify(payload))
         });
@@ -519,7 +515,7 @@
     }
 
     // =========================================================================
-    // 運算與闖關模組邏輯
+    // 核心代數運算與闖關模組邏輯
     // =========================================================================
     let session = {
         currentMode: 'CHALLENGE', endCondition: 'COUNT', totalQuestions: 5, targetScore: 5,
@@ -543,7 +539,6 @@
         }
     }
 
-    // 切換面板
     function showPanel(id) {
         document.querySelectorAll('.step-panel').forEach(p => p.classList.remove('active'));
         document.getElementById(id).classList.add('active');
@@ -826,18 +821,28 @@
 
     function advanceQuestion() {
         if (session.currentMode === 'CHALLENGE') {
-            if (session.endCondition === 'COUNT') {
+            if (session.currentIdx < session.questionList.length - 1) {
                 session.currentIdx++;
-                if (session.currentIdx < session.totalQuestions) loadPolynomialToStage();
-                else { alert(`🏁 挑戰結束！數據已安全上傳至雲端試算表。`); resetToMainMenu(); }
+                loadPolynomialToStage();
             } else {
-                if (session.score >= session.targetScore) { alert(`🏆 積分達標！任務完成！`); resetToMainMenu(); }
-                else { session.currentIdx++; session.questionList.push(generateRandomPolynomial(session.selectedType)); loadPolynomialToStage(); }
+                if (session.endCondition === 'COUNT') {
+                    alert(`🏁 挑戰結束！數據已安全上傳至雲端試算表。`); resetToMainMenu();
+                } else {
+                    if (session.score >= session.targetScore) { alert(`🏆 積分達標！任務完成！`); resetToMainMenu(); }
+                    else { session.currentIdx++; session.questionList.push(generateRandomPolynomial(session.selectedType)); loadPolynomialToStage(); }
+                }
             }
         } else if (session.currentMode === 'REVIEW') {
-            session.currentIdx++;
-            if (session.currentIdx < session.totalQuestions) loadPolynomialToStage();
-            else { alert(`🏁 溫習結束！剩餘錯題：${wrongProblemBook.length} 題。`); resetToMainMenu(); }
+            if (session.currentIdx < wrongProblemBook.length) {
+                // 因為可能移除了錯題，長度改變，直接以當前 index 重新載入
+                session.totalQuestions = wrongProblemBook.length;
+                session.questionList = [...wrongProblemBook];
+                if(session.currentIdx < wrongProblemBook.length) {
+                    loadPolynomialToStage();
+                } else {
+                    alert(`🏁 溫習結束！剩餘錯題：${wrongProblemBook.length} 題。`); resetToMainMenu();
+                }
+            } else { alert(`🏁 溫習結束！剩餘錯題：${wrongProblemBook.length} 題。`); resetToMainMenu(); }
         }
     }
 
