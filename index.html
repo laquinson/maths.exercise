@@ -410,7 +410,7 @@
         }
     }
 
-    // 👤 雲端對接核心一：【高相容真讀取】打破 no-cors 跨電腦壁壘限制！
+    // 👤 雲端對接核心一：【高相容真讀取】相容 ContentService 標準通訊串流
     function loginStudent() {
         const cls = document.getElementById('loginClass').value;
         const seat = document.getElementById('loginSeat').value;
@@ -418,29 +418,23 @@
 
         toggleOverlay(true, `正在跨校園網絡抓取 ${cls}班 ${seat}號 雲端實時數據...`);
 
-        // 智慧型安全傳輸模型：使用 GET 搭配 jsonData 傳遞參數，這能 100% 繞過跨網域 CORS 讀取封鎖，讀到雲端最新狀態！
         var postData = { action: "load", userKey: currentUserKey };
         
+        // 透過明文 GET 帶純 JSON 標頭，徹底打通不同設備與電腦的互通牆
         fetch(GAS_API_URL + "?jsonData=" + encodeURIComponent(JSON.stringify(postData)), {
             method: "GET" 
         })
-        .then(res => res.text())
-        .then(htmlText => {
-            try {
-                var cleanJson = htmlText.replace(/<[^>]*>/g, "").trim();
-                var data = JSON.parse(cleanJson);
+        .then(res => res.json()) // 💡 關鍵修正：現在後端是標準 JSON，前端直接用 .json() 解析，不再有字串錯位問題！
+        .then(data => {
+            if(data && data.success && data.stats) {
+                wrongProblemBook = data.wrongBook || [];
+                learningStats = data.stats;
                 
-                if(data && data.success) {
-                    wrongProblemBook = data.wrongBook || [];
-                    learningStats = data.stats || getInitialStatsObject();
-                    
-                    localStorage.setItem(`PolyCloudCache_${currentUserKey}`, JSON.stringify({
-                        wrongBook: wrongProblemBook, stats: learningStats
-                    }));
-                } else {
-                    initFallbackData();
-                }
-            } catch(e) {
+                // 同步寫入當前本機快取
+                localStorage.setItem(`PolyCloudCache_${currentUserKey}`, JSON.stringify({
+                    wrongBook: wrongProblemBook, stats: learningStats
+                }));
+            } else {
                 initFallbackData();
             }
             toggleOverlay(false);
