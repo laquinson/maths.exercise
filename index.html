@@ -251,7 +251,7 @@ HTML
             <input type="number" id="targetScoreInput" value="5" min="1" max="50">
         </div>
 
-        <button onclick="initChallengeSession()" style="background-color: var(--success); font-size: 18px;">🎲 建立隨機變數關關卡，出發！</button>
+        <button onclick="initChallengeSession()" style="background-color: var(--success); font-size: 18px;">🎲 建立隨機變數關卡，出發！</button>
     </div>
 
     <!-- 步驟 1-3: 解答模式（手動出題） -->
@@ -327,7 +327,7 @@ HTML
                     <p><strong>第三步：魔法集成</strong></p>
                     <p id="stage3Text">請串聯最終的多項式：</p>
                     <div class="inline-form">
-                        <input type="text" id="finalAnsInput" placeholder="例如: a+8">
+                        <input type="text" id="finalAnsInput" placeholder="example: a+8">
                         <button onclick="executeFinal()">宣告最終結果</button>
                     </div>
                 </div>
@@ -393,29 +393,44 @@ HTML
     let wrongProblemBook = [];
     let learningStats = {};
 
+    // 💡 修正亮點：改用立即執行函數 (IIFE) 確保在頁面一載入時，無論任何狀態，選單百分之百建立成功！
+    (function initLoginDropdowns() {
+        // 利用定時器等待 DOM 元素渲染完成
+        const checkExist = setInterval(function() {
+            const classSelect = document.getElementById('loginClass');
+            const seatSelect = document.getElementById('loginSeat');
+            
+            if (classSelect && seatSelect) {
+                clearInterval(checkExist);
+                classSelect.innerHTML = "";
+                seatSelect.innerHTML = "";
+                
+                // 產生 1A 至 6D 班級
+                for (let grade = 1; grade <= 6; grade++) {
+                    ['A', 'B', 'C', 'D'].forEach(letter => {
+                        let opt = document.createElement('option');
+                        opt.value = `${grade}${letter}`; 
+                        opt.innerText = `${grade}${letter} 班`;
+                        classSelect.appendChild(opt);
+                    });
+                }
+                
+                // 產生 1 至 35 號
+                for (let i = 1; i <= 35; i++) {
+                    let opt = document.createElement('option');
+                    opt.value = i; 
+                    opt.innerText = `${i} 號`;
+                    seatSelect.appendChild(opt);
+                }
+            }
+        }, 50);
+    })();
+
     function toggleOverlay(show, text="雲端魔法矩陣通訊中...") {
         const overlay = document.getElementById('loadingOverlay');
         document.getElementById('loadingText').innerText = text;
-        overlay.style.display = show ? 'flex' : 'none';
+        if (overlay) overlay.style.display = show ? 'flex' : 'none';
     }
-
-    // 初始化下拉選單
-    window.onload = function() {
-        const classSelect = document.getElementById('loginClass');
-        const seatSelect = document.getElementById('loginSeat');
-        for (let grade = 1; grade <= 6; grade++) {
-            ['A', 'B', 'C', 'D'].forEach(letter => {
-                let opt = document.createElement('option');
-                opt.value = `${grade}${letter}`; opt.innerText = `${grade}${letter} 班`;
-                classSelect.appendChild(opt);
-            });
-        }
-        for (let i = 1; i <= 35; i++) {
-            let opt = document.createElement('option');
-            opt.value = i; opt.innerText = `${i} 號`;
-            seatSelect.appendChild(opt);
-        }
-    };
 
     // 👤 雲端對接功能一：載入學生資料
     function loginStudent() {
@@ -435,14 +450,11 @@ HTML
 
         fetch(GAS_API_URL, {
             method: "POST",
-            mode: "no-cors", // 避免跨網域問題
+            mode: "no-cors", 
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ action: "load", userKey: currentUserKey })
         })
         .then(() => {
-            // 💡 提示：教育版 no-cors 模式無法在前端獲取 Response 內容
-            // 為了在完全免登入、免經費的環境下實現多機互通，我們採用「同步覆蓋模型」：
-            // 若為首次登入則建立全新資料，並透過 LocalStorage 輔助緩衝。
             let cached = localStorage.getItem(`PolyCloudCache_${currentUserKey}`);
             if(cached) {
                 let parsed = JSON.parse(cached);
@@ -474,14 +486,12 @@ HTML
     function cloudSaveData() {
         if (!currentUserKey) return;
         
-        // 更新本機緩衝，確保 no-cors 下同台或別台快速登入資料最新
         localStorage.setItem(`PolyCloudCache_${currentUserKey}`, JSON.stringify({
             wrongBook: wrongProblemBook, stats: learningStats
         }));
 
         if(!GAS_API_URL || GAS_API_URL.startsWith("請在此處")) return;
 
-        // 非同步上傳至 Google 試算表，完全不卡住學生的作答流暢度！
         fetch(GAS_API_URL, {
             method: "POST",
             mode: "no-cors",
@@ -647,7 +657,7 @@ HTML
 
         if(session.currentMode === 'CHALLENGE') {
             learningStats[session.currentTypeNum].total++;
-            cloudSaveData(); // 立即回傳雲端
+            cloudSaveData(); 
         }
         let progBannerText = "";
         if (session.currentMode === 'CHALLENGE') {
@@ -854,6 +864,7 @@ HTML
         document.getElementById('printDate').innerText = `報告產出時間：` + new Date().toLocaleDateString('zh-TW', { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' });
     }
 
+    // PDF 導出
     function exportToPDF() { calculateAndRenderStats(); window.print(); }
 
     function renderMathSteps(stepCode) {
