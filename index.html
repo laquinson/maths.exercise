@@ -158,17 +158,15 @@
 </head>
 <body>
 
-<!-- 雲端通訊讀取覆蓋框 -->
 <div id="loadingOverlay" class="loading-overlay" style="display: none;">
     <div class="spinner"></div>
     <p style="margin-top: 15px; font-weight: bold; color: var(--primary);" id="loadingText">雲端通訊中...</p>
 </div>
 
-<button id="globalHomeBtn" class="home-nav-btn" onclick="resetToMainMenu()">↩️ 返回首頁</button>
+<button id="globalHomeBtn" class="home-nav-btn" onclick="resetToMainMenu(true)">↩️ 返回首頁</button>
 <button id="globalLogoutBtn" class="logout-btn" onclick="logoutStudent()">🚪 切換帳號</button>
 
 <div class="container">
-    <!-- PDF 列印專用抬頭 -->
     <div class="print-only-header">
         <h1>🔮 多項式隨機變數化簡 - 學生個人學習歷程報告</h1>
         <h2 id="printStudentInfo" style="color:#111;">學生班別：載入中...</h2>
@@ -178,7 +176,6 @@
     <h1 class="non-print">🔮 多項式隨機變數化簡大師</h1>
     <hr class="non-print" style="border: 0; height: 1px; background: #ddd; margin-bottom: 20px;">
 
-    <!-- 步驟 0: 學生登入面板 -->
     <div id="step0_login" class="step-panel active">
         <h2 style="margin-bottom: 20px;">👤 學生數據個人化登入 (雲端完全體互通版)</h2>
         <div class="supported-types" style="text-align: center;">
@@ -217,7 +214,6 @@
         <button id="loginSubmitBtn" onclick="loginStudent()" style="background-color: var(--primary); font-size: 18px; margin-top: 10px;">雲端互通登入 🚀</button>
     </div>
 
-    <!-- 步驟 1: 主選單 -->
     <div id="step1" class="step-panel">
         <h2 id="welcomeText" style="color: var(--success);">歡迎前來學習！</h2>
         <div class="mode-selection-box">
@@ -240,7 +236,6 @@
         </div>
     </div>
 
-    <!-- 步驟 1-2: 闖關模式設定 -->
     <div id="step1_challenge" class="step-panel">
         <h2>🎮 闖關模式設定</h2>
         <div class="form-group">
@@ -278,7 +273,6 @@
         <button onclick="initChallengeSession()" style="background-color: var(--success); font-size: 18px;">🎲 建立隨機變數關卡，出發！</button>
     </div>
 
-    <!-- 步驟 1-3: 解答模式（手動出題） -->
     <div id="step1_solver" class="step-panel">
         <h2>🛠️ 解答模式（手動出題）</h2>
         <div class="supported-types">
@@ -293,7 +287,6 @@
         <button onclick="handleManualSolverInput()" style="font-size: 18px;">開始化簡逐步教學</button>
     </div>
 
-    <!-- 步驟 2: 答題舞台 -->
     <div id="step2" class="step-panel">
         <div class="progress-banner">
             <span id="progressText">進度：載入中...</span>
@@ -312,7 +305,6 @@
         <button id="submitAnsBtn" onclick="checkFirstAnswer()">提交結果並驗證</button>
     </div>
 
-    <!-- 步驟 3: 互動思考與引導破譯舞台 -->
     <div id="step3" class="step-panel">
         <div class="progress-banner">
             <span id="progressTextStage3">進度：載入中...</span>
@@ -331,7 +323,6 @@
             <div class="teaching-column">
                 <h3>🛠️ 魔法陣逐步操作</h3>
                 
-                <!-- 第一步：去括號 -->
                 <div id="interactiveStage1" style="display: none;">
                     <div class="block-form">
                         <label><strong>第一步：解開束縛（去括號）</strong></label>
@@ -342,7 +333,6 @@
                     </div>
                 </div>
 
-                <!-- 第二步：同類歸宗 -->
                 <div id="interactiveStage2" style="display: none;">
                     <p id="stage2Text"><strong>第二步：同類歸宗（同類項係數合併算式）</strong></p>
                     <p style="color: #4f46e5; font-size:14px; margin-bottom: 10px;">💡 重要提示：請在此處填入<b>係數合併的計算過程算式</b>。例如原式若有 6x 與 -2x，請填入 <code>6-2</code> 或是 <code>6+(-2)</code>，不要直接寫心算結果數字喔！</p>
@@ -350,7 +340,6 @@
                     <button style="margin-top:15px;" onclick="executeCombineStage()">確認係數算式</button>
                 </div>
 
-                <!-- 第三步：最終統合結果 -->
                 <div id="interactiveStage3" style="display: none;">
                     <div class="block-form">
                         <p><strong>第三步：魔法集成（宣告最終結果）</strong></p>
@@ -370,7 +359,6 @@
         <button id="nextBtn" class="btn-success" onclick="advanceQuestion()" style="display:none; margin-top:20px;">前進下一題 ➡️</button>
     </div>
 
-    <!-- 數據看板與 PDF 歷程面板 -->
     <div id="step_stats_panel" class="step-panel">
         <h2>📊 學生學習歷程數據分析</h2>
         <p class="non-print" style="color:#666; font-size:14px; text-align:center;">此處統計「智能闖關模式」下所有作答數據。首發答對率反映概念精熟度；綜合通關率反映加上補答修正後的答對表現。</p>
@@ -388,8 +376,7 @@
                 </tr>
             </thead>
             <tbody id="statsTableBody">
-                <!-- 動態注入 -->
-            </tbody>
+                </tbody>
         </table>
 
         <div style="margin-top: 30px;">
@@ -401,11 +388,10 @@
 
         <div class="btn-group non-print">
             <button class="btn-info" onclick="exportToPDF()">🖨️ 匯出 PDF 學習報告</button>
-            <button class="btn-secondary" onclick="resetToMainMenu()" style="margin-top:0;">↩️ 返回主選單</button>
+            <button class="btn-secondary" onclick="resetToMainMenu(false)" style="margin-top:0;">↩️ 返回主選單</button>
         </div>
     </div>
 
-    <!-- PDF 列印專用頁尾 -->
     <div class="print-footer">
         <p>代數大師：多項式隨機變數化簡機 © 2026 數位教學歷程系統</p>
     </div>
@@ -564,10 +550,10 @@
         else if (mode === 'STATS') { calculateAndRenderStats(); showPanel('step_stats_panel'); }
     }
 
-    // 💡 關鍵修正點：加入全方位元件存在性安全檢查（Optional Chaining），徹底阻斷元件不存在造成的 JS 報錯卡死
-    function resetToMainMenu() {
+    // 💡 徹底消除死結核心：加入 needConfirm 變數。若是自然答題完畢，直接放行，永不跳出對話框！
+    function resetToMainMenu(needConfirm = false) {
         let confirmLeave = true;
-        if((session.currentMode === 'CHALLENGE' || session.currentMode === 'REVIEW') && (document.getElementById('step2').classList.contains('active') || document.getElementById('step3').classList.contains('active'))) {
+        if(needConfirm && (session.currentMode === 'CHALLENGE' || session.currentMode === 'REVIEW') && (document.getElementById('step2').classList.contains('active') || document.getElementById('step3').classList.contains('active'))) {
             confirmLeave = confirm("確定要中止測驗返回首頁嗎？未完成的題組分數將不予保留。");
         }
         if(confirmLeave) {
@@ -709,7 +695,7 @@
                 learningStats[session.currentTypeNum].failed++; cloudSaveData();
             }
             if (session.currentMode === 'CHALLENGE' && session.wrongAttemptsThisQuestion === 1) {
-                session.score -= 1; document.getElementById('scoreText').innerText = `目前積分：${session.score} 分`;
+                session.score -= 1; document.getElementById('scoreText').innerText = `目の前積分：${session.score} 分`;
                 document.getElementById('initialFeedbackArea').className = "feedback warning";
                 document.getElementById('initialFeedbackArea').innerHTML = `❌ 化簡結果有誤差！<b>積分 -1 分！</b><br>別急，提供你一次<b>原地補答修正機會</b>！`;
                 document.getElementById('submitAnsBtn').innerText = "重新檢查並提交補答"; document.getElementById('submitAnsBtn').className = "btn-warning";
@@ -816,11 +802,11 @@
         if(poly.targetVarType === 'v1_v2') {
             let dActualSign = poly.sign === '+' ? poly.d : -poly.d;
             targetFormulaV2OrC = `${poly.b}${fmtSign(dActualSign)}`;
-            html += `<div class="form-group"><label>✏️ ${poly.v2} 項的係數算式過程（example: ${poly.b}${fmtSign(dActualSign)}）：</label><input type="text" id="coeffV2Input" placeholder="請填入加減合併算式"></div>`;
+            html += `<div class="form-group"><label>✏️ ${poly.v2} 項的係數算式過程（例如填寫： ${poly.b}${fmtSign(dActualSign)}）：</label><input type="text" id="coeffV2Input" placeholder="請填入加減合併算式"></div>`;
         } else {
             let fSign = poly.sign === '+' ? poly.f : -poly.f;
             targetFormulaV2OrC = `${poly.e}${fmtSign(fSign)}`;
-            html += `<div class="form-group"><label>✏️ 常數項的合併算式過程（example: ${poly.e}${fmtSign(fSign)}）：</label><input type="text" id="coeffCInput" placeholder="請填入加減合併算式"></div>`;
+            html += `<div class="form-group"><label>✏️ 常數項的合併算式過程（例如填寫： ${poly.e}${fmtSign(fSign)}）：</label><input type="text" id="coeffCInput" placeholder="請填入加減合併算式"></div>`;
         }
         document.getElementById('combineFormGroup').innerHTML = html;
     }
@@ -890,7 +876,7 @@
         } else { alert("格式錯誤，請拼湊剛才計算出的最終最簡化簡結果。"); }
     }
 
-    // 💡 關鍵修正點：判斷是否已經是該題組的最後一題，是的話直接導向安全回主選單函式
+    // 💡 關鍵修正點：當判定沒有下一題時，呼叫 resetToMainMenu(false)，強制關閉確認對話框，秒跳首頁！
     function advanceQuestion() {
         if (session.currentMode === 'CHALLENGE') {
             if (session.currentIdx < session.questionList.length - 1) {
@@ -899,11 +885,11 @@
             } else {
                 if (session.endCondition === 'COUNT') {
                     alert(`🏁 恭喜完成整組代數挑戰！數據已自動同步備份至雲端。`); 
-                    resetToMainMenu();
+                    resetToMainMenu(false);
                 } else {
                     if (session.score >= session.targetScore) { 
                         alert(`🏆 積分達標！任務完成！`); 
-                        resetToMainMenu(); 
+                        resetToMainMenu(false); 
                     } else { 
                         session.currentIdx++; 
                         session.questionList.push(generateRandomPolynomial(session.selectedType)); 
@@ -919,10 +905,10 @@
                 loadPolynomialToStage();
             } else { 
                 alert(`🏁 溫習結束！`); 
-                resetToMainMenu(); 
+                resetToMainMenu(false); 
             }
         } else {
-            resetToMainMenu();
+            resetToMainMenu(false);
         }
     }
 
